@@ -1,0 +1,49 @@
+---
+title: "Deliverable 1"
+author: "Madeline Hoshko"
+date: "October 4, 2019"
+output:
+  html_document:
+    df_print: paged
+---
+
+
+```{r setup, include=FALSE}
+library("tidyverse")
+library("dplyr")
+library("readr")
+```
+
+```{r}
+df <- read.csv('Drug Death Data.csv')
+head(df)
+df$OtherSignifican <- ifelse(df$OtherSignifican=="Y", "Y", "N")
+
+```
+This same substitution to include N for all blank data was used for columns Heroin, Cocaine, Fentanyl, FentanylAnalogue, Oxycodone, Oxymorphone, Ethanol, Hydrocodone, Benzodiazepine, Methadone, Amphet, Tramad, Morphine_NotHeroine, Hydromorphone, Other, AnyOpioid, and OpiateNOS.
+
+```{r, include=FALSE}
+df$Heroin <- ifelse(df$Heroin=="Y", "Y", "N")
+df$Cocaine <- ifelse(df$Cocaine=="Y", "Y", "N")
+df$Fentanyl <- ifelse(df$Fentanyl=="Y", "Y", "N")
+df$FentanylAnalogue <- ifelse(df$FentanylAnalogue=="Y", "Y", "N")
+df$Oxycodone <- ifelse(df$Oxycodone=="Y", "Y", "N")
+df$Oxymorphone <- ifelse(df$Oxymorphone=="Y", "Y", "N")
+df$Ethanol <- ifelse(df$Ethanol=="Y", "Y", "N")
+df$Hydrocodone <- ifelse(df$Hydrocodone=="Y", "Y", "N")
+df$Benzodiazepine <- ifelse(df$Benzodiazepine=="Y", "Y", "N")
+df$Methadone <- ifelse(df$Methadone=="Y", "Y", "N")
+df$Amphet <- ifelse(df$Amphet=="Y", "Y", "N")
+df$Tramad <- ifelse(df$Tramad=="Y", "Y", "N")
+df$Morphine_NotHeroin <- ifelse(df$Morphine_NotHeroin=="Y", "Y", "N")
+df$Hydromorphone <- ifelse(df$Hydromorphone=="Y", "Y", "N")
+df$Other <- ifelse(df$Other=="Y", "Y", "N")
+df$AnyOpioid <- ifelse(df$AnyOpioid=="Y", "Y", "N")
+df$OpiateNOS <- ifelse(df$OpiateNOS=="Y", "Y", "N")
+```
+
+
+```{r}
+head(df)
+```
+
