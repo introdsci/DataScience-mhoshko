@@ -12,11 +12,25 @@ output:
 library("tidyverse")
 library("dplyr")
 library("readr")
+library("ggplot2")
 ```
 
 ```{r}
 df <- read.csv('Drug Death Data.csv')
 head(df)
+df <- select(df, -"ID")
+df$Date <- gsub( " .*$", "", df$Date )
+df$Date <- as.Date(df$Date, format="%m/%d/%Y")
+
+
+
+colnames(df)[colnames(df)=="COD"] <- "CauseOfDeath"
+colnames(df)[colnames(df)=="DeathCityGeo"]<-"DeathCityCoordinates"
+colnames(df)[colnames(df)=="ResidenceCityGeo"]<-"ResidenceCityCoordinates"
+colnames(df)[colnames(df)=="InjuryCityGeo"]<-"InjuryCityCoordinates"
+df$DeathCityCoordinates <- gsub(".*\\n", "", df$DeathCityCoordinates)
+df$ResidenceCityCoordinates <- gsub(".*\\n", "", df$ResidenceCityCoordinates)
+df$InjuryCityCoordinates <- gsub(".*\\n", "", df$InjuryCityCoordinates)
 df$OtherSignifican <- ifelse(df$OtherSignifican=="Y", "Y", "N")
 
 ```
@@ -45,5 +59,18 @@ df$OpiateNOS <- ifelse(df$OpiateNOS=="Y", "Y", "N")
 
 ```{r}
 head(df)
+
+ggplot(data=df, aes(x=Age)) + geom_histogram(binwidth = 1)
+df$DeathCity <- as.factor(df$DeathCity)
+df$DeathCounty <- as.factor(df$DeathCounty)
+
+ggplot(data=df, aes(x=DeathCounty)) +
+  geom_bar(stat="count")
+
+df$DeathCounty[df$DeathCounty == ''] <- NA
+df$DeathCounty[df$DeathCounty=="USA"] <- NA
+filter(df, !is.na(DeathCounty)) %>% 
+  ggplot(aes(x=DeathCounty)) +
+  geom_bar(stat="count")
 ```
 
