@@ -13,7 +13,7 @@ In under 250 words give a brief summary of the project so far.
 ### 1. Discovery and Data Preparation
 
 Provide a one-sentence introduction with what is covered by the first deliverable along with a link to another html page that gives the details. 
-Read more [here](./deliverable1.html)
+Read more [here](deliverable1.html)
 
 ### 2. Model Planning and Building
 
