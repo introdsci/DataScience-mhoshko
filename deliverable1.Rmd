@@ -13,15 +13,16 @@ library("tidyverse")
 library("dplyr")
 library("readr")
 library("ggplot2")
+library("lubridate")
 ```
 
 ```{r}
-df <- read.csv('Drug Death Data.csv')
+df <- read.csv('Drug Death Data.csv', na.strings=c("","NA"))
 head(df)
 df <- select(df, -"ID")
 df$Date <- gsub( " .*$", "", df$Date )
 df$Date <- as.Date(df$Date, format="%m/%d/%Y")
-
+df$Year <- year(df$Date)
 
 
 colnames(df)[colnames(df)=="COD"] <- "CauseOfDeath"
@@ -60,17 +61,28 @@ df$OpiateNOS <- ifelse(df$OpiateNOS=="Y", "Y", "N")
 ```{r}
 head(df)
 
-ggplot(data=df, aes(x=Age)) + geom_histogram(binwidth = 1)
+ggplot(data=df, aes(x=Age)) + 
+  geom_histogram(binwidth = 1) + 
+  labs(title='Ages of Accidental Drug Related Deaths 2012-2018 in Conneticut', x='Age', y='Number of Deaths')
+
+
+
+
 df$DeathCity <- as.factor(df$DeathCity)
 df$DeathCounty <- as.factor(df$DeathCounty)
-
-ggplot(data=df, aes(x=DeathCounty)) +
-  geom_bar(stat="count")
-
-df$DeathCounty[df$DeathCounty == ''] <- NA
 df$DeathCounty[df$DeathCounty=="USA"] <- NA
+
+
 filter(df, !is.na(DeathCounty)) %>% 
   ggplot(aes(x=DeathCounty)) +
-  geom_bar(stat="count")
+  geom_bar(stat="count") + 
+  labs(title='Number of Accidental Drug Related Deaths 2012-2018 in Conneticut by County', x='county', y='Number of Deaths') + 
+  geom_text(stat='count', aes(label=..count..), position=position_dodge(width=0.9), vjust=-0.25)
+
+
+ggplot(data=df, aes(x=Year, y=..count..))+
+  geom_bar() +
+  geom_text(stat='count', aes(label=..count..), position=position_dodge(width=0.9), vjust=-0.25)
+
 ```
 
