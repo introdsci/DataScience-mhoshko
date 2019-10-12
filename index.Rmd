@@ -1,6 +1,6 @@
 ---
-title: " " #replace the title with something short and catchy to represent your project
-subtitle: "____'s Data Science Portfolio" #replace blank with your name
+title: "The Opioid Epidemic within the Frame of Connecticut" 
+subtitle: "Madeline's Data Science Portfolio" #replace blank with your name
 output:
   html_document:
     df_print: paged
@@ -8,11 +8,11 @@ output:
 
 ## Abstract
 
-In under 250 words give a brief summary of the project so far.
+I am very interested in the epidemic that the United States is facing with opioids. I have decided to pursue this subject for my project to gain a better understanding of the problem, as well as view relationships amongst different factors of the epidemic that I am interested in. My current dataset is confined to accidental drug deaths within Connecticut, however, I plan to eventually attempt to join this dataset with that of data on all large prescribing locations in Connecticut of the drugs involved. It is my goal to see the relationship Fentanyl has had with overdoses over the years, as well as look into locations of deaths to view whether the proximity to large pharmacies or cities has an impact on the number of deaths. There are many routes to explore and I am planning to find more datasets to increase the options of advancement within this project.
 
 ### 1. Discovery and Data Preparation
 
- 
+In my first deliverable, I clean up the data appropriately for ease of use, with column naming, formatting of data and more before using these updated values to create  show death rates over time in terms of gender, location and more. 
 Link to my deliverable: [here](./deliverable1.html)
 
 

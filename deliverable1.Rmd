@@ -14,8 +14,10 @@ library("dplyr")
 library("readr")
 library("ggplot2")
 library("lubridate")
+library("stringr")
 ```
 
+I first bring in my dataset and set all empty data to NA. I then format my date column to be of type date and derive a Year, Month, and MonthandYear column for potential use in visualizations. Additionally, I created a new column of data for the number of drugs within the person's system at the time of death, currently set to 0. I include the head of my dataframe as a reference to changes made afterwards.
 ```{r}
 df <- read.csv('Drug Death Data.csv', na.strings=c("","NA"))
 head(df)
@@ -23,8 +25,14 @@ df <- select(df, -"ID")
 df$Date <- gsub( " .*$", "", df$Date )
 df$Date <- as.Date(df$Date, format="%m/%d/%Y")
 df$Year <- year(df$Date)
+df$Month <- month(df$Date)
+df$MonthandYear <- format(df$Date, "%m/%Y")
+df$numberOfDrugs <- 0
+```
 
 
+I now rename columns to reduce confusion, as well as change all "Geo" columns to only include their coordinate data to reduce redundancy of city and county names amongst the data. Then I set columns to be factors where necessary.
+```{r}
 colnames(df)[colnames(df)=="COD"] <- "CauseOfDeath"
 colnames(df)[colnames(df)=="DeathCityGeo"]<-"DeathCityCoordinates"
 colnames(df)[colnames(df)=="ResidenceCityGeo"]<-"ResidenceCityCoordinates"
@@ -32,57 +40,141 @@ colnames(df)[colnames(df)=="InjuryCityGeo"]<-"InjuryCityCoordinates"
 df$DeathCityCoordinates <- gsub(".*\\n", "", df$DeathCityCoordinates)
 df$ResidenceCityCoordinates <- gsub(".*\\n", "", df$ResidenceCityCoordinates)
 df$InjuryCityCoordinates <- gsub(".*\\n", "", df$InjuryCityCoordinates)
-df$OtherSignifican <- ifelse(df$OtherSignifican=="Y", "Y", "N")
 
-```
-This same substitution to include N for all blank data was used for columns Heroin, Cocaine, Fentanyl, FentanylAnalogue, Oxycodone, Oxymorphone, Ethanol, Hydrocodone, Benzodiazepine, Methadone, Amphet, Tramad, Morphine_NotHeroine, Hydromorphone, Other, AnyOpioid, and OpiateNOS.
-
-```{r, include=FALSE}
-df$Heroin <- ifelse(df$Heroin=="Y", "Y", "N")
-df$Cocaine <- ifelse(df$Cocaine=="Y", "Y", "N")
-df$Fentanyl <- ifelse(df$Fentanyl=="Y", "Y", "N")
-df$FentanylAnalogue <- ifelse(df$FentanylAnalogue=="Y", "Y", "N")
-df$Oxycodone <- ifelse(df$Oxycodone=="Y", "Y", "N")
-df$Oxymorphone <- ifelse(df$Oxymorphone=="Y", "Y", "N")
-df$Ethanol <- ifelse(df$Ethanol=="Y", "Y", "N")
-df$Hydrocodone <- ifelse(df$Hydrocodone=="Y", "Y", "N")
-df$Benzodiazepine <- ifelse(df$Benzodiazepine=="Y", "Y", "N")
-df$Methadone <- ifelse(df$Methadone=="Y", "Y", "N")
-df$Amphet <- ifelse(df$Amphet=="Y", "Y", "N")
-df$Tramad <- ifelse(df$Tramad=="Y", "Y", "N")
-df$Morphine_NotHeroin <- ifelse(df$Morphine_NotHeroin=="Y", "Y", "N")
-df$Hydromorphone <- ifelse(df$Hydromorphone=="Y", "Y", "N")
-df$Other <- ifelse(df$Other=="Y", "Y", "N")
-df$AnyOpioid <- ifelse(df$AnyOpioid=="Y", "Y", "N")
-df$OpiateNOS <- ifelse(df$OpiateNOS=="Y", "Y", "N")
-```
-
-
-```{r}
-head(df)
-
-ggplot(data=df, aes(x=Age)) + 
-  geom_histogram(binwidth = 1) + 
-  labs(title='Ages of Accidental Drug Related Deaths 2012-2018 in Conneticut', x='Age', y='Number of Deaths')
-
-
-
-
+df$MannerofDeath <- tolower(df$MannerofDeath)
+df$MannerofDeath <- factor(df$MannerofDeath)
 df$DeathCity <- as.factor(df$DeathCity)
 df$DeathCounty <- as.factor(df$DeathCounty)
 df$DeathCounty[df$DeathCounty=="USA"] <- NA
+```
+
+I now substitute all NA values over the columns indicating whether the specific drug was found in the person's system at time of death with "N" to match the format "Y" for when it is true. I also increase the number of drugs for the observation whenever one of the columns is labeled "Y". I repeat through all columns (Heroin, Cocaine, Fentanyl, FentanylAnalogue, Oxycodone, Oxymorphone, Ethanol, Hydrocodone, Benzodiazepine, Methadone, Amphet, Tramad, Morphine_NotHeroine, Hydromorphone, Other, AnyOpioid, and OpiateNOS), but only show the first column code to reduce clutter within this file. 
+```{r}
+df$numberOfDrugs <- ifelse(is.na(df$OtherSignifican), df$numberOfDrugs+0, df$numberOfDrugs+1)
+df$OtherSignifican <- ifelse(is.na(df$OtherSignifican), "N", "Y")
+```
+
+
+```{r, include=FALSE}
+df$numberOfDrugs <- ifelse(is.na(df$Heroin), df$numberOfDrugs+0, df$numberOfDrugs+1)
+df$Heroin <- ifelse(is.na(df$Heroin), "N", "Y")
+df$numberOfDrugs <- ifelse(is.na(df$Cocaine), df$numberOfDrugs+0, df$numberOfDrugs+1)
+df$Cocaine <- ifelse(is.na(df$Cocaine), "N", "Y")
+df$numberOfDrugs <- ifelse(is.na(df$Fentanyl), df$numberOfDrugs+0, df$numberOfDrugs+1)
+df$Fentanyl <- ifelse(is.na(df$Fentanyl), "N", "Y")
+df$numberOfDrugs <- ifelse(is.na(df$FentanylAnalogue), df$numberOfDrugs+0, df$numberOfDrugs+1)
+df$FentanylAnalogue <- ifelse(is.na(df$FentanylAnalogue), "N", "Y")
+df$numberOfDrugs <- ifelse(is.na(df$Oxycodone), df$numberOfDrugs+0, df$numberOfDrugs+1)
+df$Oxycodone <- ifelse(is.na(df$Oxycodone), "N", "Y")
+df$numberOfDrugs <- ifelse(is.na(df$Oxymorphone), df$numberOfDrugs+0, df$numberOfDrugs+1)
+df$Oxymorphone <- ifelse(is.na(df$Oxymorphone), "N", "Y")
+df$numberOfDrugs <- ifelse(is.na(df$Ethanol), df$numberOfDrugs+0, df$numberOfDrugs+1)
+df$Ethanol <- ifelse(is.na(df$Ethanol), "N", "Y")
+df$numberOfDrugs <- ifelse(is.na(df$Hydrocodone), df$numberOfDrugs+0, df$numberOfDrugs+1)
+df$Hydrocodone <- ifelse(is.na(df$Hydrocodone), "N", "Y")
+df$numberOfDrugs <- ifelse(is.na(df$Benzodiazepine), df$numberOfDrugs+0, df$numberOfDrugs+1)
+df$Benzodiazepine <- ifelse(is.na(df$Benzodiazepine), "N", "Y")
+df$numberOfDrugs <- ifelse(is.na(df$Methadone), df$numberOfDrugs+0, df$numberOfDrugs+1)
+df$Methadone <- ifelse(is.na(df$Methadone), "N", "Y")
+df$numberOfDrugs <- ifelse(is.na(df$Amphet), df$numberOfDrugs+0, df$numberOfDrugs+1)
+df$Amphet <- ifelse(is.na(df$Amphet), "N", "Y")
+df$numberOfDrugs <- ifelse(is.na(df$Tramad), df$numberOfDrugs+0, df$numberOfDrugs+1)
+df$Tramad <- ifelse(is.na(df$Tramad), "N", "Y")
+df$numberOfDrugs <- ifelse(is.na(df$Morphine_NotHeroin), df$numberOfDrugs+0, df$numberOfDrugs+1)
+df$Morphine_NotHeroin <- ifelse(is.na(df$Morphine_NotHeroin), "N", "Y")
+df$numberOfDrugs <- ifelse(is.na(df$Hydromorphone), df$numberOfDrugs+0, df$numberOfDrugs+1)
+df$Hydromorphone <- ifelse(is.na(df$Hydromorphone), "N", "Y")
+df$numberOfDrugs <- ifelse(is.na(df$Other), df$numberOfDrugs+0, df$numberOfDrugs+1)
+df$Other <- ifelse(is.na(df$Other), "N", "Y")
+df$numberOfDrugs <- ifelse(is.na(df$AnyOpioid), df$numberOfDrugs+0, df$numberOfDrugs+1)
+df$AnyOpioid <- ifelse(is.na(df$AnyOpioid), "N", "Y")
+df$numberOfDrugs <- ifelse(is.na(df$OpiateNOS), df$numberOfDrugs+0, df$numberOfDrugs+1)
+df$OpiateNOS <- ifelse(is.na(df$OpiateNOS), "N", "Y")
+
+```
+
+Included here is the head of my dataframe to prove changes have been made to clean up the data in previous steps.
+```{r}
+head(df)
+```
+
+I now include visualizations to the drug overdose deaths, each explained within its graph title. I use filtering to promote cleaner data and reduce outliers throughout (mostly in terms of eliminated NA's). I left these values in currently to refrain from elminating data I may want to use in the future.
+```{r}
+filter(df, !is.na(Age)) %>%
+  ggplot(aes(x=Age)) + 
+  geom_histogram(binwidth = .5) + 
+  labs(title='Ages of Accidental Drug Related Deaths 2012-2018 in Connecticut', x='Age', y='Number of Deaths')
 
 
 filter(df, !is.na(DeathCounty)) %>% 
   ggplot(aes(x=DeathCounty)) +
   geom_bar(stat="count") + 
-  labs(title='Number of Accidental Drug Related Deaths 2012-2018 in Conneticut by County', x='county', y='Number of Deaths') + 
+  labs(title='Number of Accidental Drug Related Deaths 2012-2018 in Connecticut by County', x='County', y='Number of Deaths') + 
+  theme(axis.text.x=element_text(angle=90, hjust=1)) +
+  geom_text(stat='count', aes(label=..count..), position=position_dodge(width=0.9), vjust=-0.25)
+```
+
+
+Within the dataset, 2016 and some of 2014 do not have location data for the death county, so I will be working towards deriving this information from those that do include death city with another dataset that links cities to counties for Connecticut.
+```{r}
+filter(df, !is.na(Year)) %>%
+  ggplot(aes(x=Year, y=..count..))+
+  geom_bar(aes(fill=factor(DeathCounty))) + 
+  labs(title='Number of Accidental Drug Related Deaths 2012-2018 in Connecticut by Year', x='Year', y='Number of Deaths') +
   geom_text(stat='count', aes(label=..count..), position=position_dodge(width=0.9), vjust=-0.25)
 
 
-ggplot(data=df, aes(x=Year, y=..count..))+
-  geom_bar() +
-  geom_text(stat='count', aes(label=..count..), position=position_dodge(width=0.9), vjust=-0.25)
+df %>%
+   filter(!is.na(Fentanyl)) %>%
+   filter(!is.na(Year))%>%
+   group_by(Year) %>%
+   summarise(Sum_of_Fentanyl_Deaths=n())
+
+df %>%
+  filter(Fentanyl=="Y") %>%
+  filter(!is.na(Year)) %>%
+  ggplot(aes(x=Date))+ geom_line(aes(y=..count..), stat="bin", binwidth=35)+
+  labs(title="Deaths involving Fentanyl", x="Year", y="Number of Deaths") 
+
+
+df %>%
+   filter(!is.na(Fentanyl)) %>%
+   filter(!is.na(Year))%>%
+   group_by(Year) %>%
+   summarise(Sum_of_Non_Fentanyl_Deaths=n())
+
+df %>%
+  filter(Fentanyl=="N") %>%
+  filter(!is.na(Year)) %>%  
+  ggplot(aes(x=Date))+ geom_line(aes(y=..count..), stat="bin", binwidth=25) +
+  labs(title="Deaths Not involving Fentanyl", x="Date", y="Number of Deaths")
+  
+
+df %>%
+   filter(!is.na(Age)) %>%
+   filter(!is.na(Year)) %>%
+   group_by(Year) %>%
+   summarise(Mean_Age = mean(Age))
+
+df %>%
+  filter(!is.na(numberOfDrugs)) %>%
+  filter(!is.na(Year)) %>%
+  group_by(Year) %>%
+  summarise(Mean_Number_of_Drugs = mean(numberOfDrugs))
+
+df %>%
+  filter(!is.na(numberOfDrugs)) %>%
+  filter(!is.na(Year)) %>%
+  filter(!is.na(Sex)) %>%
+  group_by(Year) %>%
+  group_by(Sex) %>%
+  summarise(num_deaths = n())
+
+
+filter(df, !is.na(Date)) %>%
+  filter(!is.na(Sex)) %>%
+  ggplot(aes(x=Date)) + geom_line(aes(y=..count.., color=Sex), stat="bin", binwidth=50) +
+  labs(title="Number of Deaths over Time by Gender", x="Date", y="Number of Deaths")
 
 ```
 
