@@ -12,7 +12,8 @@ I am very interested in the epidemic that the United States is facing with opioi
 
 ### 1. Discovery and Data Preparation
 
-In my first deliverable, I clean up the data appropriately for ease of use, with column naming, formatting of data and more before using these updated values to create  show death rates over time in terms of gender, location and more. 
+In my first deliverable, I clean up the data appropriately for ease of use, with column naming, formatting of data and more before using these updated values to create  show death rates over time in terms of gender, location and more.
+
 Link to my deliverable: [here](./deliverable1.html)
 
 
