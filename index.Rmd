@@ -16,6 +16,8 @@ In my first deliverable, I clean up the data appropriately for ease of use, with
 
 Link to my deliverable: [here](./deliverable1.html)
 
+Link to my deliverable 2: [here](./deliverable2.html)
+ 
 
 ### 2. Model Planning and Building
 

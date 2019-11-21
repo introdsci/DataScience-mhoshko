@@ -8,7 +8,7 @@ output:
 ---
 
 
-```{r setup, include=FALSE}
+```{r setup}
 library("tidyverse")
 library("dplyr")
 library("readr")
@@ -28,6 +28,7 @@ df$Year <- year(df$Date)
 df$Month <- month(df$Date)
 df$MonthandYear <- format(df$Date, "%m/%Y")
 df$numberOfDrugs <- 0
+df$Location <- as.factor(df$Location)
 ```
 
 
@@ -43,8 +44,14 @@ df$InjuryCityCoordinates <- gsub(".*\\n", "", df$InjuryCityCoordinates)
 
 df$MannerofDeath <- tolower(df$MannerofDeath)
 df$MannerofDeath <- factor(df$MannerofDeath)
-df$DeathCity <- as.factor(df$DeathCity)
-df$DeathCounty <- as.factor(df$DeathCounty)
+df$DeathCity <- as.character.factor(df$DeathCity)
+df$InjuryCity <- as.character.factor(df$InjuryCity)
+df$ResidenceCity <- as.character.factor(df$ResidenceCity)
+df$DeathCounty <- as.character.factor(df$DeathCounty)
+df$InjuryCounty <- as.character.factor(df$InjuryCounty)
+df$ResidenceCounty <- as.character.factor(df$ResidenceCounty)
+df$InjuryState <- as.character.factor(df$InjuryState)
+df$ResidenceState <- as.character.factor(df$ResidenceState)
 df$DeathCounty[df$DeathCounty=="USA"] <- NA
 ```
 
