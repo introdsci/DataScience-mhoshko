@@ -19,58 +19,11 @@ for (pkg in pkgs){
 
 purl("deliverable1.Rmd", output="part1.r")
 source("part1.r")
-
-
-```
-
-```{r}
-web = read_html("https://www.mapsofworld.com/usa/states/connecticut/lat-long.html")
-my_paragraphs = html_nodes(web, "tbody")
-my_tr = html_nodes(my_paragraphs, "tr")
-
-cityname <- my_tr %>%
-  html_nodes("td:first_child") %>%
-  html_text()
-citylat <- my_tr %>%
-  html_nodes("td:nth_child(2)") %>%
-  html_text() %>%
-  as.double()
-citylong <- my_tr %>%
-  html_nodes("td:nth_child(3)") %>%
-  html_text() %>%
-  as.double
-
-
-citycoordinates <- cbind.data.frame(cityname=cityname, lat=citylat, long=citylong) 
-citycoordinates <- citycoordinates[1:142,]
-
-citycoordinates$cityname <- citycoordinates$cityname %>%
-  toupper() 
-
-
-citycoordinates$cityname <-  gsub(" CITY", "", citycoordinates$cityname) 
-citycoordinates$cityname <- gsub(" BOROUGH", "", citycoordinates$cityname)
-citycoordinates$cityname <- gsub("JEWETT", "JEWETT CITY", citycoordinates$cityname)
-citycoordinates$cityname <- gsub(" VILLAGE", "", citycoordinates$cityname)
-citycoordinates$cityname <- gsub("FALLS", "FALLS VILLAGE", citycoordinates$cityname)
 ```
 
 
-```{r}
-# location <- tibble(DeathCity=df$DeathCity, DeathCounty=df$DeathCounty, DeathCityCoordinates=df$DeathCityCoordinates, ResidenceCity=df$ResidenceCity, ResidenceCounty=df$ResidenceCounty, ResidenceState=df$ResidenceState, ResidenceCityCoordinates=df$ResidenceCityCoordinates, InjuryCity=df$InjuryCity, InjuryCounty=df$InjuryCounty, InjuryCityCoordinates=df$InjuryCityCoordinates)
-  
-```
-  
-```{r}
-# df$DeathCity <- as.character.factor(df$DeathCity)
-# df$InjuryCity <- as.character.factor(df$InjuryCity)
-# df$ResidenceCity <- as.character.factor(df$ResidenceCity)
-# df$DeathCounty <- as.character.factor(df$DeathCounty)
-# df$InjuryCounty <- as.character.factor(df$InjuryCounty)
-# df$ResidenceCounty <- as.character.factor(df$ResidenceCounty)
-# df$InjuryState <- as.character.factor(df$InjuryState)
-# df$ResidenceState <- as.character.factor(df$ResidenceState)
 
+```{r, warning=FALSE}
 df$latDeath <- df$DeathCityCoordinates %>%
   str_extract('\\d\\d\\.\\d+') %>%
   as.double()
@@ -99,97 +52,327 @@ df$longResidence <- df$ResidenceCityCoordinates %>%
 df$locationDistance <- distHaversine(cbind(df$longDeath, df$latDeath), cbind(df$longInjury, df$latInjury))
 df$locationDistance <- conv_unit(df$locationDistance, "m", "mi")
 
-#df <- df[order(df$latDeath),]
+
 df$latDeath <- round(df$latDeath, digits=2)
 df$longDeath <- round(df$longDeath, digits=2)
 df$latInjury <- round(df$latInjury, digits=2)
 df$longInjury <- round(df$longInjury, digits=2)
 df$latResidence <- round(df$latResidence, digits=2)
 df$longResidence <- round(df$longResidence, digits=2)
+
+df$ResidenceCity <- gsub("FALLS VILLAGE", "FALLS", df$ResidenceCity)
 ```
 
 
-adds death locations
+adds death locations CORRECT WAY TO JOIN
 ```{r}
-colnames(df)[colnames(df)=="latDeath"]<-"lat"
-colnames(df)[colnames(df)=="longDeath"]<-"long"
+
+web = read_html("https://www.mapsofworld.com/usa/states/connecticut/lat-long.html")
+my_paragraphs = html_nodes(web, "tbody")
+my_tr = html_nodes(my_paragraphs, "tr")
+
+cityname <- my_tr %>%
+  html_nodes("td:first_child") %>%
+  html_text()
+citylat <- my_tr %>%
+  html_nodes("td:nth_child(2)") %>%
+  html_text() %>%
+  as.double()
+citylong <- my_tr %>%
+  html_nodes("td:nth_child(3)") %>%
+  html_text() %>%
+  as.double
 
 
-df <- merge(x = df, y = citycoordinates, by = c("lat", "long"), all.x = TRUE)
-df$DeathCity <- ifelse(is.na(df$DeathCity), df$cityname,   df$DeathCity )
+citycoordinates <- cbind.data.frame(cityname=cityname, lat=citylat, long=citylong) 
+citycoordinates <- citycoordinates[1:142,]
+
+citycoordinates$cityname <- citycoordinates$cityname %>%
+  toupper() 
+
+
+citycoordinates$cityname <-  gsub(" CITY", "", citycoordinates$cityname) 
+citycoordinates$cityname <- gsub(" BOROUGH", "", citycoordinates$cityname)
+citycoordinates$cityname <- gsub("JEWETT", "JEWETT CITY", citycoordinates$cityname)
+citycoordinates$cityname <- gsub(" VILLAGE", "", citycoordinates$cityname)
+citycoordinates$cityname <- gsub(" \\(BALANCE\\)", "", citycoordinates$cityname)
+citycoordinates$cityname <- gsub("MILFORD ", "MILFORD", citycoordinates$cityname)
+
+
 ```
 
 
-Adding injury cities
-```{r}
- df$lat <- NULL
- df$long <- NULL
- df$cityname <- NULL
-
-colnames(df)[colnames(df)=="latInjury"]<-"lat"
-colnames(df)[colnames(df)=="longInjury"]<-"long"
-df <- merge(x = df, y = citycoordinates, by = c("lat", "long"), all.x = TRUE)
-df$InjuryCity <- ifelse(is.na(df$InjuryCity), df$cityname,   df$InjuryCity )
-
-```
-
-
-Adding residence cities
-```{r}
- df$lat <- NULL
- df$long <- NULL
- df$cityname <- NULL
-
-colnames(df)[colnames(df)=="latResidence"]<-"lat"
-colnames(df)[colnames(df)=="longResidence"]<-"long"
-df <- merge(x = df, y = citycoordinates, by = c("lat", "long"), all.x = TRUE)
-df$ResidenceCity <- ifelse(is.na(df$ResidenceCity), df$cityname,   df$ResidenceCity )
-
-
- df$lat <- NULL
- df$long <- NULL
- df$cityname <- NULL
-```
-
-County and State Info
 ```{r}
 countyinfo <- "uscities.csv" %>%
   read.csv() %>%
   filter(state_name == "Connecticut") %>%
   select(c("city", "county_name", "state_name"))
 
+
+#fix column names and city names to help join datasets
 countyinfo$city <- toupper(countyinfo$city)
+countyinfo$county_name <- toupper(countyinfo$county_name)
+
+
 countyinfo$state_name <- as.character.factor(countyinfo$state_name)
 countyinfo$state_name <- "CT"
 
+colnames(countyinfo)[colnames(countyinfo)=="city"]<-"cityname"
+countyinfo$cityname <-  gsub(" VILLAGE", "", countyinfo$cityname)
+countyinfo$cityname <-  gsub("GLENVILLE", "GREENWICH", countyinfo$cityname)
+countyinfo$cityname <-  gsub("MILFORD CITY", "MILFORD", countyinfo$cityname) 
+cit <- merge(x = countyinfo, y = citycoordinates, by = "cityname", all.x = TRUE)
 
-colnames(countyinfo)[colnames(countyinfo)=="city"]<-"DeathCity"
-countyinfo$county_name <- toupper(countyinfo$county_name)
-df <- merge(df, countyinfo, by="DeathCity", all.x=TRUE)
-df$DeathCounty <- ifelse(is.na(df$DeathCounty), df$county_name, df$DeathCounty)
-
-
-
-
-df$county_name <- NULL
-df$state_name <- NULL
-colnames(countyinfo)[colnames(countyinfo)=="DeathCity"]<-"InjuryCity"
-df <- merge(df, countyinfo, by="InjuryCity", all.x=TRUE)
-df$InjuryCounty <- ifelse(is.na(df$InjuryCounty), df$county_name, df$InjuryCounty)
-df$InjuryState <- ifelse(is.na(df$InjuryState), df$state_name, df$InjuryState)
+#Add two missing row values
+cit$lat <- ifelse(cit$cityname=="MILFORD ", 41.23,   cit$lat)
+cit$long <- ifelse(cit$cityname=="MILFORD ", -73.06,   cit$long)
+cit$lat <- ifelse(cit$cityname=="PLANTSVILLE", 41.58,   cit$lat)
+cit$long <- ifelse(cit$cityname=="PLANTSVILLE", -72.89,   cit$long)
 
 
-df$county_name <- NULL
-df$state_name <- NULL
-colnames(countyinfo)[colnames(countyinfo)=="InjuryCity"]<-"ResidenceCity"
-df <- merge(df, countyinfo, by="ResidenceCity", all.x=TRUE)
-df$ResidenceCounty <- ifelse(is.na(df$ResidenceCounty), df$county_name, df$ResidenceCounty)
-df$ResidenceState <- ifelse(is.na(df$ResidenceState), df$state_name, df$ResidenceState)
+
+setDT(df)
+setDT(cit)
+df[, `:=`(lat.join = latDeath, long.join = longDeath)]
+cit[, `:=`(lat.join = lat, long.join = long)]
+df <- cit[df, on = c("lat.join", "long.join"),roll = "nearest"]
 
 
-df$county_name <- NULL
-df$state_name <- NULL
+sum(is.na(df$DeathCity))
+sum(is.na(df$DeathCounty))
+df$DeathCity <- ifelse(is.na(df$DeathCity), df$cityname,  df$DeathCity)
+df$DeathCounty <- ifelse(is.na(df$DeathCounty), df$county_name,  df$DeathCounty)
+sum(is.na(df$DeathCity))
+sum(is.na(df$DeathCounty))
+
+#filter(df, df$cityname=="CONNING TOWERS NAUTILUS PARK")
+
+
+```
+Adding Residence City, County, and State
+```{r}
+df$lat <- NULL
+df$long <- NULL
 df$cityname <- NULL
+df$lat.join <- NULL
+df$long.join <- NULL
+df$state_name <- NULL
+df$county_name <- NULL
 
+
+df[, `:=`(lat.join = latResidence, long.join = longResidence)]
+df <- cit[df, on = c("lat.join", "long.join"),roll = "nearest"]
+
+
+sum(is.na(df$ResidenceCity))
+sum(is.na(df$ResidenceCounty))
+sum(is.na(df$ResidenceState))
+df$ResidenceCity <- ifelse(is.na(df$ResidenceCity), df$cityname,  df$ResidenceCity)
+df$ResidenceCounty <- ifelse((is.na(df$ResidenceCounty)), df$county_name,  df$ResidenceCounty)
+df$ResidenceState <- ifelse((is.na(df$ResidenceState)), df$state_name,  df$ResidenceState)
+sum(is.na(df$ResidenceCity))
+sum(is.na(df$ResidenceCounty))
+sum(is.na(df$ResidenceState))
+
+```
+
+Adding Injury City, County, and State
+```{r}
+df$lat <- NULL
+df$long <- NULL
+df$cityname <- NULL
+df$lat.join <- NULL
+df$long.join <- NULL
+df$state_name <- NULL
+df$county_name <- NULL
+
+
+df[, `:=`(lat.join = latInjury, long.join = longInjury)]
+df <- cit[df, on = c("lat.join", "long.join"),roll = "nearest" ]
+
+
+sum(is.na(df$InjuryCity))
+sum(is.na(df$InjuryCounty))
+sum(is.na(df$InjuryState))
+df$InjuryCity <- ifelse(is.na(df$InjuryCity), df$cityname,  df$InjuryCity)
+df$InjuryCounty <- ifelse(is.na(df$InjuryCounty), df$county_name,  df$InjuryCounty)
+df$InjuryState <- ifelse(is.na(df$InjuryState), df$state_name,  df$InjuryState)
+sum(is.na(df$InjuryCity))
+sum(is.na(df$InjuryCounty))
+sum(is.na(df$InjuryState))
+```
+Clear no longer needed data
+```{r}
+df$lat <- NULL
+df$long <- NULL
+df$cityname <- NULL
+df$lat.join <- NULL
+df$long.join <- NULL
+df$state_name <- NULL
+df$county_name <- NULL
+
+```
+
+
+
+Distance From Death Model with Injury County, Age, Sex, and Number of Drugs
+```{r}
+set.seed(385)
+samp <- df %>%
+  filter(!is.na(df$locationDistance), !is.na(df$InjuryCity), !is.na(df$Age), 
+           !is.na(df$Sex), !is.na(df$numberOfDrugs),  !is.na(df$Location)) 
+
+sample_selection <- samp$locationDistance %>%
+  createDataPartition(p=0.75, list = FALSE)
+train <- samp[sample_selection, ]
+test <- samp[-sample_selection, ]
+train_model <- lm(locationDistance ~ Age + Sex + numberOfDrugs + InjuryCity + Location, data=samp)
+
+
+prediction <- train_model %>% predict(test)
+head(prediction)
+head(samp$locationDistance)
+R2(prediction, test$locationDistance)
+  ggplot(test, aes(x=prediction, y=locationDistance))+geom_point()
+
+```
+
+
+Distance From Death Model with Injury County
+```{r}
+samp <- df %>%
+  filter(!is.na(df$locationDistance), !is.na(df$InjuryCity), !is.na(df$Location)) 
+
+sample_selection <- samp$locationDistance %>%
+  createDataPartition(p=0.90, list = FALSE)
+train <- samp[sample_selection, ]
+test <- samp[-sample_selection, ]
+train_model <- lm(locationDistance ~ InjuryCity + Location, data=samp)
+
+
+prediction <- train_model %>% predict(test)
+head(prediction)
+head(samp$locationDistance)
+R2(prediction, test$locationDistance)
+
+```
+
+```{r}
+  ggplot(test, aes(x=prediction, y=locationDistance))+geom_point()
+
+```
+
+```{r}
+filter(df, !is.na(Location), !is.na(locationDistance), !is.na(InjuryCounty)) %>%
+  ggplot(aes(x=InjuryCounty, y=locationDistance)) + geom_point(aes(color=Location)) +
+  theme(axis.text.x = element_text(angle = 45, hjust = 1))
+```
+
+
+```{r}
+
+# filter(df, !is.na(Age)) %>% 
+#   filter(!is.na(locationDistance)) %>%
+#   ggplot(aes(x=locationDistance)) +
+#   geom_line(aes(y=..count.., color=Age) )+ 
+#   labs(title='Number of Accidental Drug Related Deaths 2012-2018 in Connecticut by Distance', x='Miles from Death Location', y='Number of Deaths')
+
+
+filter(df, !is.na(Year)) %>%
+  ggplot(aes(x=Fentanyl, y=..count..))+
+  geom_bar(aes(fill=Location)) + 
+  labs(title='Overdoses Involving Fentanyl by Overdose Location', x='Fentanyl Involved', y='Number of Deaths') +
+  geom_text(stat='count', aes(label=..count..), position=position_dodge(width=0.9), vjust=-0.25)
+
+
+filter(df, !is.na(locationDistance)) %>%
+  filter(!is.na(Location)) %>%
+  ggplot(aes(x=locationDistance))+ geom_line(aes(y=..count.., color=Location), stat="bin", binwidth=50)+
+  labs(title='Location of Death vs Injury', x='Distance From Death Location (miles)', y='Number of Deaths')
+
+
+
+df %>%
+  filter(!is.na(numberOfDrugs)) %>%
+  filter(Fentanyl=="Y") %>%
+  group_by(Year) %>%
+  summarise(Mean_Number_of_Drugs = mean(numberOfDrugs))
+
+```
+
+
+
+```{r}
+filter(df, !is.na(Year)) %>%
+  ggplot(aes(x=Year, y=..count..))+
+  geom_bar(aes(fill=factor(DeathCounty))) + 
+  labs(title='Number of Accidental Drug Related Deaths 2012-2018 in Connecticut by Year', x='Year', y='Number of Deaths') +
+  geom_text(stat='count', aes(label=..count..), position=position_dodge(width=0.9), vjust=-0.25)
+
+
+df %>%
+   filter(!is.na(Fentanyl)) %>%
+   filter(!is.na(Year))%>%
+   group_by(Year) %>%
+   summarise(Sum_of_Fentanyl_Deaths=n())
+
+df %>%
+  filter(Fentanyl=="Y") %>%
+  filter(!is.na(Year)) %>%
+  ggplot(aes(x=Date))+ geom_line(aes(y=..count..), stat="bin", binwidth=35)+
+  labs(title="Deaths involving Fentanyl", x="Year", y="Number of Deaths") 
+
+
+df %>%
+   filter(!is.na(Fentanyl)) %>%
+   filter(!is.na(Year))%>%
+   group_by(Year) %>%
+   summarise(Sum_of_Non_Fentanyl_Deaths=n())
+
+df %>%
+  filter(Fentanyl=="N") %>%
+  filter(!is.na(Year)) %>%  
+  ggplot(aes(x=Date))+ geom_line(aes(y=..count..), stat="bin", binwidth=25) +
+  labs(title="Deaths Not involving Fentanyl", x="Date", y="Number of Deaths")
+  
+
+df %>%
+   filter(!is.na(Age)) %>%
+   filter(!is.na(Year)) %>%
+   group_by(Year) %>%
+   summarise(Mean_Age = mean(Age))
+
+df %>%
+  filter(!is.na(numberOfDrugs)) %>%
+  filter(!is.na(Year)) %>%
+  group_by(Year) %>%
+  summarise(Mean_Number_of_Drugs = mean(numberOfDrugs))
+
+df %>%
+  filter(!is.na(numberOfDrugs)) %>%
+  filter(!is.na(Year)) %>%
+  filter(!is.na(Sex)) %>%
+  group_by(Year) %>%
+  group_by(Sex) %>%
+  summarise(num_deaths = n())
+
+
+filter(df, !is.na(Date)) %>%
+  filter(!is.na(Sex)) %>%
+  ggplot(aes(x=Date)) + geom_line(aes(y=..count.., color=Sex), stat="bin", binwidth=50) +
+  labs(title="Number of Deaths over Time by Gender", x="Date", y="Number of Deaths")
+
+filter(df, !is.na(Age)) %>%
+  ggplot(aes(x=Age)) + 
+  geom_histogram(binwidth = .5) + 
+  labs(title='Ages of Accidental Drug Related Deaths 2012-2018 in Connecticut', x='Age', y='Number of Deaths')
+
+
+filter(df, !is.na(DeathCounty)) %>% 
+  ggplot(aes(x=DeathCounty)) +
+  geom_bar(stat="count") + 
+  labs(title='Number of Accidental Drug Related Deaths 2012-2018 in Connecticut by County', x='County', y='Number of Deaths') + 
+  theme(axis.text.x=element_text(angle=90, hjust=1)) +
+  geom_text(stat='count', aes(label=..count..), position=position_dodge(width=0.9), vjust=-0.25)
 
 ```
