@@ -9,7 +9,7 @@ output:
 
 
 ```{r echo=FALSE, message=FALSE, error=FALSE, warning=FALSE, results='hide'}
-pkgs = c("stringr", "dplyr", "tidyverse", "readr", "ggplot2", "lubridate", "geosphere", "caret", "knitr", "measurements", "data.table", "purrr", "XML", "rvest")
+pkgs = c("stringr", "dplyr", "tidyverse", "readr", "ggplot2", "lubridate", "geosphere", "caret", "knitr", "measurements", "data.table", "purrr", "rvest")
 for (pkg in pkgs){
   if (!require(pkg, character.only = T)){
     install.packages(pkg)
