@@ -25,5 +25,5 @@ Link to my deliverable 2: [here](./deliverable2.html)
 
 ### 3. Results and Operationalization
 
-Coming soon...
+Link to my deliverable 3: [here](./deliverable3.html)
 

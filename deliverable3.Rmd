@@ -1,0 +1,19 @@
+---
+title: "Deliverable 3"
+author: "Madeline Hoshko"
+date: "December 3, 2019"
+output: html_document
+---
+
+```{r echo=FALSE, message=FALSE, error=FALSE, warning=FALSE, results='hide'}
+pkgs = c("stringr", "dplyr", "tidyverse", "readr", "ggplot2", "lubridate", "geosphere", "caret", "knitr", "measurements", "data.table", "purrr", "XML", "rvest")
+for (pkg in pkgs){
+  if (!require(pkg, character.only = T)){
+    install.packages(pkg)
+    library(pkg)
+  }
+}
+
+purl("deliverable2.Rmd", output="part1.r")
+source("part1.r")
+```

@@ -8,7 +8,7 @@ output:
 ---
 
 
-```{r setup}
+```{r setup, include=FALSE}
 library("tidyverse")
 library("dplyr")
 library("readr")
@@ -17,18 +17,19 @@ library("lubridate")
 library("stringr")
 ```
 
-I first bring in my dataset and set all empty data to NA. I then format my date column to be of type date and derive a Year, Month, and MonthandYear column for potential use in visualizations. Additionally, I created a new column of data for the number of drugs within the person's system at the time of death, currently set to 0. I include the head of my dataframe as a reference to changes made afterwards.
+I first bring in my dataset and set all empty data to NA. I then format my date column to be of type date and derive a Year, Month, and MonthandYear column for potential use in visualizations. Additionally, I created a new column of data for the number of drugs within the person's system at the time of death, currently set to 0. By setting the number of drugs to 0, this will ease the process of adding 1 for each column variable that was present. I include the head of my dataframe as a reference to changes made afterwards.
 ```{r}
 df <- read.csv('Drug Death Data.csv', na.strings=c("","NA"))
 head(df)
 df <- select(df, -"ID")
+
 df$Date <- gsub( " .*$", "", df$Date )
 df$Date <- as.Date(df$Date, format="%m/%d/%Y")
 df$Year <- year(df$Date)
 df$Month <- month(df$Date)
 df$MonthandYear <- format(df$Date, "%m/%Y")
+
 df$numberOfDrugs <- 0
-df$Location <- as.factor(df$Location)
 ```
 
 
@@ -42,6 +43,9 @@ df$DeathCityCoordinates <- gsub(".*\\n", "", df$DeathCityCoordinates)
 df$ResidenceCityCoordinates <- gsub(".*\\n", "", df$ResidenceCityCoordinates)
 df$InjuryCityCoordinates <- gsub(".*\\n", "", df$InjuryCityCoordinates)
 
+
+#Setting columns to factors
+df$Location <- as.factor(df$Location)
 df$MannerofDeath <- tolower(df$MannerofDeath)
 df$MannerofDeath <- factor(df$MannerofDeath)
 df$DeathCity <- as.character.factor(df$DeathCity)

@@ -193,30 +193,7 @@ $(document).ready(function () {
 </div>
 
 
-<pre class="r"><code>library(&quot;tidyverse&quot;)</code></pre>
-<pre><code>## Warning: package 'tidyverse' was built under R version 3.5.3</code></pre>
-<pre><code>## -- Attaching packages ------------------------------------------------------------------- tidyverse 1.2.1 --</code></pre>
-<pre><code>## v ggplot2 3.1.0     v purrr   0.2.5
-## v tibble  2.1.3     v dplyr   0.8.3
-## v tidyr   1.0.0     v stringr 1.4.0
-## v readr   1.3.1     v forcats 0.3.0</code></pre>
-<pre><code>## Warning: package 'tibble' was built under R version 3.5.3</code></pre>
-<pre><code>## Warning: package 'tidyr' was built under R version 3.5.3</code></pre>
-<pre><code>## Warning: package 'dplyr' was built under R version 3.5.3</code></pre>
-<pre><code>## -- Conflicts ---------------------------------------------------------------------- tidyverse_conflicts() --
-## x dplyr::filter() masks stats::filter()
-## x dplyr::lag()    masks stats::lag()</code></pre>
-<pre class="r"><code>library(&quot;dplyr&quot;)
-library(&quot;readr&quot;)
-library(&quot;ggplot2&quot;)
-library(&quot;lubridate&quot;)</code></pre>
-<pre><code>## 
-## Attaching package: 'lubridate'</code></pre>
-<pre><code>## The following object is masked from 'package:base':
-## 
-##     date</code></pre>
-<pre class="r"><code>library(&quot;stringr&quot;)</code></pre>
-<p>I first bring in my dataset and set all empty data to NA. I then format my date column to be of type date and derive a Year, Month, and MonthandYear column for potential use in visualizations. Additionally, I created a new column of data for the number of drugs within the person’s system at the time of death, currently set to 0. I include the head of my dataframe as a reference to changes made afterwards.</p>
+<p>I first bring in my dataset and set all empty data to NA. I then format my date column to be of type date and derive a Year, Month, and MonthandYear column for potential use in visualizations. Additionally, I created a new column of data for the number of drugs within the person’s system at the time of death, currently set to 0. By setting the number of drugs to 0, this will ease the process of adding 1 for each column variable that was present. I include the head of my dataframe as a reference to changes made afterwards.</p>
 <pre class="r"><code>df &lt;- read.csv('Drug Death Data.csv', na.strings=c(&quot;&quot;,&quot;NA&quot;))
 head(df)</code></pre>
 <div data-pagedtable="false">
@@ -225,13 +202,14 @@ head(df)</code></pre>
   </script>
 </div>
 <pre class="r"><code>df &lt;- select(df, -&quot;ID&quot;)
+
 df$Date &lt;- gsub( &quot; .*$&quot;, &quot;&quot;, df$Date )
 df$Date &lt;- as.Date(df$Date, format=&quot;%m/%d/%Y&quot;)
 df$Year &lt;- year(df$Date)
 df$Month &lt;- month(df$Date)
 df$MonthandYear &lt;- format(df$Date, &quot;%m/%Y&quot;)
-df$numberOfDrugs &lt;- 0
-df$Location &lt;- as.factor(df$Location)</code></pre>
+
+df$numberOfDrugs &lt;- 0</code></pre>
 <p>I now rename columns to reduce confusion, as well as change all “Geo” columns to only include their coordinate data to reduce redundancy of city and county names amongst the data. Then I set columns to be factors where necessary.</p>
 <pre class="r"><code>colnames(df)[colnames(df)==&quot;COD&quot;] &lt;- &quot;CauseOfDeath&quot;
 colnames(df)[colnames(df)==&quot;DeathCityGeo&quot;]&lt;-&quot;DeathCityCoordinates&quot;
@@ -241,6 +219,9 @@ df$DeathCityCoordinates &lt;- gsub(&quot;.*\\n&quot;, &quot;&quot;, df$DeathCity
 df$ResidenceCityCoordinates &lt;- gsub(&quot;.*\\n&quot;, &quot;&quot;, df$ResidenceCityCoordinates)
 df$InjuryCityCoordinates &lt;- gsub(&quot;.*\\n&quot;, &quot;&quot;, df$InjuryCityCoordinates)
 
+
+#Setting columns to factors
+df$Location &lt;- as.factor(df$Location)
 df$MannerofDeath &lt;- tolower(df$MannerofDeath)
 df$MannerofDeath &lt;- factor(df$MannerofDeath)
 df$DeathCity &lt;- as.character.factor(df$DeathCity)
