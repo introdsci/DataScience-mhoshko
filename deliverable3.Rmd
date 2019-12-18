@@ -2,11 +2,13 @@
 title: "Deliverable 3"
 author: "Madeline Hoshko"
 date: "December 3, 2019"
-output: html_document
+output:
+  html_document:
+    df_print: paged
 ---
 
-```{r echo=FALSE, message=FALSE, error=FALSE, warning=FALSE, results='hide'}
-pkgs = c("stringr", "dplyr", "tidyverse", "readr", "ggplot2", "lubridate", "geosphere", "caret", "knitr", "measurements", "data.table", "purrr", "XML", "rvest")
+```{r d3setup, echo=FALSE, message=FALSE, error=FALSE, warning=FALSE, results='hide'}
+pkgs = c("stringr", "dplyr", "tidyverse", "readr", "ggplot2", "lubridate", "geosphere", "caret", "knitr", "measurements", "data.table", "purrr", "rvest")
 for (pkg in pkgs){
   if (!require(pkg, character.only = T)){
     install.packages(pkg)
@@ -14,6 +16,58 @@ for (pkg in pkgs){
   }
 }
 
-purl("deliverable2.Rmd", output="part1.r")
-source("part1.r")
+purl("deliverable2.Rmd", output="part2.r")
+source("part2.r")
 ```
+
+<p style="text-align: center;"><h1>Revisions</h1></p>
+In response to my peer feedback indicating I have more data than necessary, I first remove all unneeded data that don't have a strong contribution and all data I will not be using in any of my models or visualizations. Additionally, I improved documentation within the two previous deliverables.
+```{r df3}
+df <- as.data.frame(df)
+(df)
+```
+
+```{r d2revisions}
+df <- df[, -c(2,6,7,8,13,18,39)]
+(df)
+```
+
+<p style="text-align: center;"><h1>Cross Validation</h1></p>
+Within the scope of my project, my goal within the third deliverable was to find data indicating the response times of emergency services for the cities in Connecticut to help create a stronger model. This data however was too challenging to find and/or derive. Below I perform cross-validation methods on the current model I created within deliverable two.
+
+```{r cross_validation, warning=FALSE}
+set.seed(385) 
+train.control <- trainControl(method = "repeatedcv", 
+                              number = 10, repeats = 3)
+model <- train(locationDistance ~InjuryCity + Location, data = samp, method = "lm",
+               trControl = train.control)
+
+print(model)
+```
+In using the repeated K-fold cross validation, I find that locationDistance (miles from overdose to death) can be predicted accurately around 63% of the time (as indicated by the R squared value), and has an average error of around 8 miles (indicated by RMSE), and has a Mean Absolute Error value of around 4.9 miles (indicated by MAE). These results show that the model can accurately predict the distance between overdose in death around 63% of the time, with an average error of 8 miles. 
+The following graph represents my model. It is unchanged from the previous deliverable as there haven't been any updates to the model.
+
+
+```{r new/same_vis}
+sample_selection <- samp$locationDistance %>%
+  createDataPartition(p=0.90, list = FALSE)
+train <- samp[sample_selection, ]
+test <- samp[-sample_selection, ]
+train_model <- lm(locationDistance ~ InjuryCity + Location, data=samp)
+
+
+prediction <- train_model %>% predict(test)
+ggplot(test, aes(x=prediction, y=locationDistance))+geom_point(color = "blue")  +
+  labs(title='Distance Between Death and Overdose vs Predicted (v2)', x='Distance From Death Location (miles)', y='Predicted Distance from Death Location (miles)')
+
+```
+
+<p style="text-align: center;"><h1>Operationalization and Impact</h1></p>
+To operationalize this model, the next steps that should be taken would be to add the emergency response time as well as time between overdose and calling emergency services to all future observations of the dataset. 
+Given the city and type of location can indicate how close to the overdose location people will pass away, we can expose a potential problem that needs correcting within Connecticut. The next step is to consider what factors contribute to allow this model to work as well as it does. The contributing factors that are not a part of this dataset could include anything from the emergency response times, and delay between the overdose and bystanders caling 911. 
+If this model were to be expanded on in the future with these two additional data points, Connecticut could see whether they need to take action. The social impact from these results could mean the need for educating the people of Connecticut on their Good Samaratin Law, creating more accessible emergency relief, and providing supplies for safe drug use. Given the negative view many people have for drug addicts, the potential actions of Connecticut could bring up major ethical issues within its state as many people may not support the government in spending their resources to help the opioid crisis.
+
+
+
+<p style="text-align: center;"><h1>Conclusion</h1></p>
+Within my three deliverables, I have investigated the relationship between Fentanyl and the opioid crisis, as well as the location of overdoses to the location of death to expose potential problems that need to be addressed in Connecticut. With the operationalization of this dataset and model, it is my belief that there will be actions to be taken by Connecticut to address the rising use of Fentanyl and promote the accessibility of emergency services.
