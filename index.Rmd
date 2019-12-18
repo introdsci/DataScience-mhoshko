@@ -1,6 +1,6 @@
 ---
 title: "The Opioid Epidemic within the Frame of Connecticut" 
-subtitle: "Madeline's Data Science Portfolio" #replace blank with your name
+subtitle: "Madeline's Data Science Portfolio" 
 output:
   html_document:
     df_print: paged
@@ -8,7 +8,7 @@ output:
 
 ## Abstract
 
-I am very interested in the epidemic that the United States is facing with opioids. I have decided to pursue this subject for my project to gain a better understanding of the problem, as well as view relationships amongst different factors of the epidemic that I am interested in. My current dataset is confined to accidental drug deaths within Connecticut, however, I plan to eventually attempt to join this dataset with that of data on all large prescribing locations in Connecticut of the drugs involved. It is my goal to see the relationship Fentanyl has had with overdoses over the years, as well as look into locations of deaths to view whether the proximity to large pharmacies or cities has an impact on the number of deaths. There are many routes to explore and I am planning to find more datasets to increase the options of advancement within this project.
+I am very interested in the epidemic that the United States is facing with opioids. I have decided to pursue this subject for my project to gain a better understanding of the problem, as well as view relationships amongst different factors of the epidemic that I am interested in. My dataset is confined to accidental drug deaths within Connecticut and it is my goal to see the relationship Fentanyl has had with overdoses over the years, as well as look into locations of deaths to view whether the proximity to large cities has an impact on the number of deaths. There are many routes to explore and I am planning to find more datasets to increase the options of advancement within this project.
 
 ### 1. Discovery and Data Preparation
 
@@ -25,5 +25,6 @@ Link to my deliverable 2: [here](./deliverable2.html)
 
 ### 3. Results and Operationalization
 
-Link to my deliverable 3: [here](./deliverable3.html)
+My third deliverable focuses on the constraint of inaccessible data and it's impact on my model. With this restraint, I discuss the next steps needed to operationalize the model as well as the social implications that arise from the actions that this model will heed.
 
+Link to my deliverable 3: [here](./deliverable3.html)
