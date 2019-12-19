@@ -16,16 +16,17 @@ df <- select(df, -"ID")
 df$Date <- gsub( " .*$", "", df$Date )
 df$Date <- as.Date(df$Date, format="%m/%d/%Y")
 df$Year <- year(df$Date)
-df$Month <- month(df$Date)
-df$MonthandYear <- format(df$Date, "%m/%Y")
 
 df$numberOfDrugs <- 0
 
 ## ------------------------------------------------------------------------
+#renaming columns
 colnames(df)[colnames(df)=="COD"] <- "CauseOfDeath"
 colnames(df)[colnames(df)=="DeathCityGeo"]<-"DeathCityCoordinates"
 colnames(df)[colnames(df)=="ResidenceCityGeo"]<-"ResidenceCityCoordinates"
 colnames(df)[colnames(df)=="InjuryCityGeo"]<-"InjuryCityCoordinates"
+
+#formatting latitude/longitude columns
 df$DeathCityCoordinates <- gsub(".*\\n", "", df$DeathCityCoordinates)
 df$ResidenceCityCoordinates <- gsub(".*\\n", "", df$ResidenceCityCoordinates)
 df$InjuryCityCoordinates <- gsub(".*\\n", "", df$InjuryCityCoordinates)

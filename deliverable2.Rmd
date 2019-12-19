@@ -55,7 +55,7 @@ df$longResidence <- df$ResidenceCityCoordinates %>%
   str_extract('\\-*\\d\\d\\.\\d+') %>%
   as.double()
 
-
+#calculates distance between overdose and death then converts meters to miles
 df$locationDistance <- distHaversine(cbind(df$longDeath, df$latDeath), cbind(df$longInjury, df$latInjury))
 df$locationDistance <- conv_unit(df$locationDistance, "m", "mi")
 
@@ -67,20 +67,21 @@ df$longInjury <- round(df$longInjury, digits=2)
 df$latResidence <- round(df$latResidence, digits=2)
 df$longResidence <- round(df$longResidence, digits=2)
 
+#format change for merging data
 df$ResidenceCity <- gsub("FALLS VILLAGE", "FALLS", df$ResidenceCity)
 ```
 
 
-<p style="text-align: center;"><h1>Data Additions</h1></p>
+<h1>Data Additions</h1>
 
 
 I now begin incorporating my new data into my project. Through the use of web scraping, I obtain the latitude and longitude for cities in Connecticut and format the values to join appropriately with my data. 
 ```{r webscrape2, warning=FALSE}
+#formatted to reduce timeout errors
 url = "https://www.mapsofworld.com/usa/states/connecticut/lat-long.html"
 download.file(url, destfile = "scrapedpage.html", quiet=TRUE)
 web <- read_html("scrapedpage.html")
 
-# web = read_html("https://www.mapsofworld.com/usa/states/connecticut/lat-long.html")
 my_paragraphs = html_nodes(web, "tbody")
 my_tr = html_nodes(my_paragraphs, "tr")
 
@@ -100,10 +101,9 @@ citylong <- my_tr %>%
 citycoordinates <- cbind.data.frame(cityname=cityname, lat=citylat, long=citylong) 
 citycoordinates <- citycoordinates[1:142,]
 
+#format to match current data on merge
 citycoordinates$cityname <- citycoordinates$cityname %>%
   toupper() 
-
-
 citycoordinates$cityname <-  gsub(" CITY", "", citycoordinates$cityname) 
 citycoordinates$cityname <- gsub(" BOROUGH", "", citycoordinates$cityname)
 citycoordinates$cityname <- gsub("JEWETT", "JEWETT CITY", citycoordinates$cityname)
@@ -112,7 +112,7 @@ citycoordinates$cityname <- gsub(" \\(BALANCE\\)", "", citycoordinates$cityname)
 citycoordinates$cityname <- gsub("MILFORD ", "MILFORD", citycoordinates$cityname)
 ```
 
-My web scraped data does not contain information on the county of each city, so I incorporate a third dataset. I format this to join with my web scraped data on the matching city names to now have a dataset that includes the latitude, longitude, city and state.
+My web scraped data does not contain information on the county of each city, so I incorporate a third dataset. My third dataset includes a list of all the cities in Connecticut and the associating county. I format this to join with my web scraped data on the matching city names to now have a resulting dataset that includes the latitude, longitude, city and state.
 ```{r countyinfo2}
 countyinfo <- "uscities.csv" %>%
   read.csv() %>%
@@ -120,7 +120,7 @@ countyinfo <- "uscities.csv" %>%
   select(c("city", "county_name", "state_name"))
 
 
-#fix column names and city names to help join datasets
+#format column names and city names to help join datasets
 countyinfo$city <- toupper(countyinfo$city)
 countyinfo$county_name <- toupper(countyinfo$county_name)
 
@@ -141,6 +141,11 @@ cit$lat <- ifelse(cit$cityname=="PLANTSVILLE", 41.58,   cit$lat)
 cit$long <- ifelse(cit$cityname=="PLANTSVILLE", -72.89,   cit$long)
 ```
 
+The following is the resulting dataset with each city's latitude, longitude, and county.
+```{r printcity}
+(cit)
+```
+
 
 Now that the data has been formatted correctly, I join the new data with my original data (which I will reference as df from now on). As the values are not going to have exact matches between the df and new data, I have to join the datasets by determining the closest match of latitude and longitude values. After joining the data together, I substitute all blank values where applicable. I have printed the number of city, county, and state empty values for the death location before and after this join and substitution to show the results of this step.
 ```{r join2}
@@ -159,15 +164,8 @@ sum(is.na(df$DeathCity))
 sum(is.na(df$DeathCounty))
 
 ```
-
-Interestingly, in this step I found there were 160 occassions with the death city of Conning Towers Nautilus Park. This location was not used as a city in the original data, so I saved the deaths in their own dataframe for potential further use.
-```{r filter2}
-park <- filter(df, df$cityname=="CONNING TOWERS NAUTILUS PARK")
-```
-
-
-I now repeat the previous steps for both Residence as well as Injury (overdose) locations.
-```{r remove2}
+```{r removecolumns, include=FALSE}
+#remove columns of data used in last step
 df$lat <- NULL
 df$long <- NULL
 df$cityname <- NULL
@@ -175,7 +173,10 @@ df$lat.join <- NULL
 df$long.join <- NULL
 df$state_name <- NULL
 df$county_name <- NULL
+```
 
+I now repeat the previous steps for both Residence as well as Injury (overdose) locations.
+```{r remove2}
 
 df[, `:=`(lat.join = latResidence, long.join = longResidence)]
 df <- cit[df, on = c("lat.join", "long.join"),roll = "nearest"]
@@ -184,8 +185,9 @@ df <- cit[df, on = c("lat.join", "long.join"),roll = "nearest"]
 df$ResidenceCity <- ifelse(is.na(df$ResidenceCity), df$cityname,  df$ResidenceCity)
 df$ResidenceCounty <- ifelse((is.na(df$ResidenceCounty)), df$county_name,  df$ResidenceCounty)
 df$ResidenceState <- ifelse((is.na(df$ResidenceState)), df$state_name,  df$ResidenceState)
+```
 
-
+```{r remove_columns2, include=FALSE}
 df$lat <- NULL
 df$long <- NULL
 df$cityname <- NULL
@@ -193,29 +195,20 @@ df$lat.join <- NULL
 df$long.join <- NULL
 df$state_name <- NULL
 df$county_name <- NULL
+```
 
 
+```{r}
 df[, `:=`(lat.join = latInjury, long.join = longInjury)]
 df <- cit[df, on = c("lat.join", "long.join"),roll = "nearest" ]
-
 
 
 df$InjuryCity <- ifelse(is.na(df$InjuryCity), df$cityname,  df$InjuryCity)
 df$InjuryCounty <- ifelse(is.na(df$InjuryCounty), df$county_name,  df$InjuryCounty)
 df$InjuryState <- ifelse(is.na(df$InjuryState), df$state_name,  df$InjuryState)
-
 ```
 
 ```{r unecessary, include=FALSE}
-
-#potential graph for future:
-# filter(df, !is.na(Age)) %>%
-#   filter(!is.na(locationDistance)) %>%
-#   ggplot(aes(x=locationDistance, y=..count..)) +
-#   geom_point(aes(color=Age)) +
-#   labs(title='Number of Accidental Drug Related Deaths 2012-2018 in Connecticut by Distance', x='Miles from Death Location', y='Number of Deaths')
-
-
 #remove no longer needed data
 df$lat <- NULL
 df$long <- NULL
@@ -235,14 +228,13 @@ df$longResidence <- NULL
 The concluding dataset.
 ```{r newdf2}
 (df)
-
 ```
 
 
-<p style="text-align: center;"><h1>Models</h1></p>
+<h1>Models</h1>
 
 
-Within this project, I became very interested in the locations where people were declared dead compared to where they overdosed. I believed there could be correlations and a relationship between the location of the overdose to how far away the death would be reported. While the relationship could be explained by countless different variables like the time and distance from emergency services the overdose occured, to those who died being alone and unable to call 911, or those who witnessed the overdose and did not contact 911, I use the data I have to see if there's a strong enough relationship to make predictions of the distance between death and overdose.
+Within this project, I became very interested in the location people were declared dead compared to where they overdosed. I believed there could be correlations and a relationship between these locations. While the relationship could be explained by countless different variables like the time and distance from emergency services the overdose occured, to those who died being alone and unable to call 911, or those who witnessed the overdose and did not contact 911, I use the data I have to see if there's a strong enough relationship to make predictions of the distance between death and overdose.
 I begin by creating a model to predict the distance with age, sex, number of drugs, city of overdose (InjuryCity), and the type of location (residence, hospital, etc) in a multiple linear regression. There is a relationship, but not strong enough to confidently make predictions, with most variations of the summary resulting in a confidence around 50% of predicting the correct distance (indicated by the R2 value).
 ```{r model2}
 set.seed(385)
@@ -296,16 +288,14 @@ R2(prediction, test$locationDistance)
 
 ```
 
-<p style="text-align: center;"><h1>New Visualizations</h1></p>
+<h1>New Visualizations</h1>
 
-We can see with this first visualization the majority of deaths are occuring within residences, and the likelihood of being declared dead at the scene of the overdose is very likely. This observation could be indicative of the potential problem of emergency response access that I wish to pursue within my models in deliverable three.
+We can see with this first visualization the majority of deaths are occuring within residences, and the likelihood of being declared dead at the scene of the overdose is likely. This observation could be indicative of the potential problem of emergency response access and societal implications that I will further look into in deliverable three.
 ```{r anotherplot2}
 filter(df, !is.na(locationDistance)) %>%
   filter(!is.na(Location)) %>%
   ggplot(aes(x=locationDistance))+ geom_line(aes(y=..count.., color=Location), stat="bin", binwidth=50)+
   labs(title='Location of Death vs Overdose', x='Distance between Overdose and Death (miles)', y='Number of Deaths')
-
-
 
 
 filter(df, !is.na(Location), !is.na(locationDistance), !is.na(InjuryCounty), InjuryCounty!="WASHINGTON", InjuryCounty!="WESTCHESTER") %>%
@@ -328,15 +318,11 @@ ggplot(df, aes(x=Fentanyl, y=..count..))+
   labs(title='Overdoses Involving Fentanyl by Location Type', x='Fentanyl Involved', y='Number of Deaths') +
   geom_text(stat='count', aes(label=..count..), position=position_dodge(width=0.9), vjust=-0.25)
 
-
-
-
-
 ```
 
-<p style="text-align: center;"><h1>Updated Visualizations</h1></p>
+<h1>Updated Visualizations</h1>
 
-The two following visualizations show the added value incorporating the two new datasets provided as shown through an increase in values displayed, and less empty values. With the new added data, I can make more confident predictions and correlations with the locations as a factor.
+The two following visualizations show the added value of incorporating the two new datasets through an increase in values displayed, and less empty values from the same visualizations in deliverable one. With the new added data, I can make more confident predictions and correlations with the locations as a factor.
 ```{r}
 filter(df, !is.na(Year)) %>%
   ggplot(aes(x=Year, y=..count..))+
@@ -355,6 +341,6 @@ filter(df, !is.na(DeathCounty)) %>%
 
 ```
 
-<p style="text-align: center;"><h1>Conclusion</h1></p>
+<h1>Conclusion</h1>
 
-Overall, the addition of new data proved to be beneficial for creating more models, however, the models were not the strongest and will be worked on within the next deliverable. There is a major importance within the model I am attempting to create, as it could indicate problems within the state of Connecticut, whether it be emergency response times, lack of access to emergency responders, and more. I plan to attempt bringing in one last dataset to provide a new variable depicting the distance between overdose and emergency services. 
+Overall, the addition of new data proved to be beneficial for creating more models, however, the models were not the strongest and will be worked on within the next deliverable. There is a major importance within the model I am attempting to address, as it could indicate problems within the state of Connecticut, whether it be emergency response times, lack of access to emergency responders, and more. I plan to attempt bringing in one last dataset to provide a new variable depicting the distance between overdose and emergency services. 

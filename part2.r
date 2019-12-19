@@ -38,7 +38,7 @@ df$longResidence <- df$ResidenceCityCoordinates %>%
   str_extract('\\-*\\d\\d\\.\\d+') %>%
   as.double()
 
-
+#calculates distance between overdose and death then converts meters to miles
 df$locationDistance <- distHaversine(cbind(df$longDeath, df$latDeath), cbind(df$longInjury, df$latInjury))
 df$locationDistance <- conv_unit(df$locationDistance, "m", "mi")
 
@@ -50,14 +50,15 @@ df$longInjury <- round(df$longInjury, digits=2)
 df$latResidence <- round(df$latResidence, digits=2)
 df$longResidence <- round(df$longResidence, digits=2)
 
+#format change for merging data
 df$ResidenceCity <- gsub("FALLS VILLAGE", "FALLS", df$ResidenceCity)
 
 ## ----webscrape2, warning=FALSE-------------------------------------------
+#formatted to reduce timeout errors
 url = "https://www.mapsofworld.com/usa/states/connecticut/lat-long.html"
 download.file(url, destfile = "scrapedpage.html", quiet=TRUE)
 web <- read_html("scrapedpage.html")
 
-# web = read_html("https://www.mapsofworld.com/usa/states/connecticut/lat-long.html")
 my_paragraphs = html_nodes(web, "tbody")
 my_tr = html_nodes(my_paragraphs, "tr")
 
@@ -77,10 +78,9 @@ citylong <- my_tr %>%
 citycoordinates <- cbind.data.frame(cityname=cityname, lat=citylat, long=citylong) 
 citycoordinates <- citycoordinates[1:142,]
 
+#format to match current data on merge
 citycoordinates$cityname <- citycoordinates$cityname %>%
   toupper() 
-
-
 citycoordinates$cityname <-  gsub(" CITY", "", citycoordinates$cityname) 
 citycoordinates$cityname <- gsub(" BOROUGH", "", citycoordinates$cityname)
 citycoordinates$cityname <- gsub("JEWETT", "JEWETT CITY", citycoordinates$cityname)
@@ -95,7 +95,7 @@ countyinfo <- "uscities.csv" %>%
   select(c("city", "county_name", "state_name"))
 
 
-#fix column names and city names to help join datasets
+#format column names and city names to help join datasets
 countyinfo$city <- toupper(countyinfo$city)
 countyinfo$county_name <- toupper(countyinfo$county_name)
 
@@ -115,6 +115,9 @@ cit$long <- ifelse(cit$cityname=="MILFORD ", -73.06,   cit$long)
 cit$lat <- ifelse(cit$cityname=="PLANTSVILLE", 41.58,   cit$lat)
 cit$long <- ifelse(cit$cityname=="PLANTSVILLE", -72.89,   cit$long)
 
+## ----printcity-----------------------------------------------------------
+(cit)
+
 ## ----join2---------------------------------------------------------------
 setDT(df)
 setDT(cit)
@@ -131,10 +134,8 @@ sum(is.na(df$DeathCity))
 sum(is.na(df$DeathCounty))
 
 
-## ----filter2-------------------------------------------------------------
-park <- filter(df, df$cityname=="CONNING TOWERS NAUTILUS PARK")
-
-## ----remove2-------------------------------------------------------------
+## ----removecolumns, include=FALSE----------------------------------------
+#remove columns of data used in last step
 df$lat <- NULL
 df$long <- NULL
 df$cityname <- NULL
@@ -143,6 +144,7 @@ df$long.join <- NULL
 df$state_name <- NULL
 df$county_name <- NULL
 
+## ----remove2-------------------------------------------------------------
 
 df[, `:=`(lat.join = latResidence, long.join = longResidence)]
 df <- cit[df, on = c("lat.join", "long.join"),roll = "nearest"]
@@ -152,7 +154,7 @@ df$ResidenceCity <- ifelse(is.na(df$ResidenceCity), df$cityname,  df$ResidenceCi
 df$ResidenceCounty <- ifelse((is.na(df$ResidenceCounty)), df$county_name,  df$ResidenceCounty)
 df$ResidenceState <- ifelse((is.na(df$ResidenceState)), df$state_name,  df$ResidenceState)
 
-
+## ----remove_columns2, include=FALSE--------------------------------------
 df$lat <- NULL
 df$long <- NULL
 df$cityname <- NULL
@@ -161,27 +163,16 @@ df$long.join <- NULL
 df$state_name <- NULL
 df$county_name <- NULL
 
-
+## ------------------------------------------------------------------------
 df[, `:=`(lat.join = latInjury, long.join = longInjury)]
 df <- cit[df, on = c("lat.join", "long.join"),roll = "nearest" ]
-
 
 
 df$InjuryCity <- ifelse(is.na(df$InjuryCity), df$cityname,  df$InjuryCity)
 df$InjuryCounty <- ifelse(is.na(df$InjuryCounty), df$county_name,  df$InjuryCounty)
 df$InjuryState <- ifelse(is.na(df$InjuryState), df$state_name,  df$InjuryState)
 
-
 ## ----unecessary, include=FALSE-------------------------------------------
-
-#potential graph for future:
-# filter(df, !is.na(Age)) %>%
-#   filter(!is.na(locationDistance)) %>%
-#   ggplot(aes(x=locationDistance, y=..count..)) +
-#   geom_point(aes(color=Age)) +
-#   labs(title='Number of Accidental Drug Related Deaths 2012-2018 in Connecticut by Distance', x='Miles from Death Location', y='Number of Deaths')
-
-
 #remove no longer needed data
 df$lat <- NULL
 df$long <- NULL
@@ -199,7 +190,6 @@ df$longResidence <- NULL
 
 ## ----newdf2--------------------------------------------------------------
 (df)
-
 
 ## ----model2--------------------------------------------------------------
 set.seed(385)
@@ -253,8 +243,6 @@ filter(df, !is.na(locationDistance)) %>%
   labs(title='Location of Death vs Overdose', x='Distance between Overdose and Death (miles)', y='Number of Deaths')
 
 
-
-
 filter(df, !is.na(Location), !is.na(locationDistance), !is.na(InjuryCounty), InjuryCounty!="WASHINGTON", InjuryCounty!="WESTCHESTER") %>%
   ggplot(aes(x=InjuryCounty, y=locationDistance)) + geom_point(aes(color=Location)) +
   labs(title="Distance Between Overdose and Death by County", x="Overdose County", y="Distance from Death Location (miles)") +
@@ -272,10 +260,6 @@ ggplot(df, aes(x=Fentanyl, y=..count..))+
   geom_bar(aes(fill=Location)) + 
   labs(title='Overdoses Involving Fentanyl by Location Type', x='Fentanyl Involved', y='Number of Deaths') +
   geom_text(stat='count', aes(label=..count..), position=position_dodge(width=0.9), vjust=-0.25)
-
-
-
-
 
 
 ## ------------------------------------------------------------------------

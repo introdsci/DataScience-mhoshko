@@ -62,12 +62,12 @@ ggplot(test, aes(x=prediction, y=locationDistance))+geom_point(color = "blue")  
 
 ```
 
-<p style="text-align: center;"><h1>Operationalization and Impact</h1></p>
+<h1>Operationalization and Impact</h1>
 To operationalize this model, the next steps that should be taken would be to add the emergency response time as well as time between overdose and calling emergency services to all future observations of the dataset. 
 Given the city and type of location can indicate how close to the overdose location people will pass away, we can expose a potential problem that needs correcting within Connecticut. The next step is to consider what factors contribute to allow this model to work as well as it does. The contributing factors that are not a part of this dataset could include anything from the emergency response times, and delay between the overdose and bystanders caling 911. 
 If this model were to be expanded on in the future with these two additional data points, Connecticut could see whether they need to take action. The social impact from these results could mean the need for educating the people of Connecticut on their Good Samaratin Law, creating more accessible emergency relief, and providing supplies for safe drug use. Given the negative view many people have for drug addicts, the potential actions of Connecticut could bring up major ethical issues within its state as many people may not support the government in spending their resources to help the opioid crisis.
 
 
 
-<p style="text-align: center;"><h1>Conclusion</h1></p>
+<h1>Conclusion</h1>
 Within my three deliverables, I have investigated the relationship between Fentanyl and the opioid crisis, as well as the location of overdoses to the location of death to expose potential problems that need to be addressed in Connecticut. With the operationalization of this dataset and model, it is my belief that there will be actions to be taken by Connecticut to address the rising use of Fentanyl and promote the accessibility of emergency services.

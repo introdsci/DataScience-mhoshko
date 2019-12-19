@@ -19,7 +19,7 @@ for (pkg in pkgs){
 
 ```
 
-I first bring in my dataset and set all empty data to NA. I then format my date column to be of type date and derive a Year, Month, and MonthandYear column for potential use in visualizations. Additionally, I created a new column of data for the number of drugs within the person's system at the time of death, currently set to 0. By setting the number of drugs to 0, this will ease the process of adding 1 for each column variable that was present. I include the head of my dataframe as a reference to changes made afterwards.
+I first bring in my dataset and set all empty data to NA. I then format my date column to be of type date and derive a Year column for potential use in visualizations. Additionally, I created a new column of data for the number of drugs within the person's system at the time of death, currently set to 0. By setting the number of drugs to 0, this will ease the process of adding 1 for each column variable that was present. I include the head of my dataframe as a reference to changes made afterwards.
 ```{r}
 df <- read.csv('Drug Death Data.csv', na.strings=c("","NA"))
 head(df)
@@ -28,8 +28,6 @@ df <- select(df, -"ID")
 df$Date <- gsub( " .*$", "", df$Date )
 df$Date <- as.Date(df$Date, format="%m/%d/%Y")
 df$Year <- year(df$Date)
-df$Month <- month(df$Date)
-df$MonthandYear <- format(df$Date, "%m/%Y")
 
 df$numberOfDrugs <- 0
 ```
@@ -37,10 +35,13 @@ df$numberOfDrugs <- 0
 
 I now rename columns to reduce confusion, as well as change all "Geo" columns to only include their coordinate data to reduce redundancy of city and county names amongst the data. Then I set columns to be factors where necessary.
 ```{r}
+#renaming columns
 colnames(df)[colnames(df)=="COD"] <- "CauseOfDeath"
 colnames(df)[colnames(df)=="DeathCityGeo"]<-"DeathCityCoordinates"
 colnames(df)[colnames(df)=="ResidenceCityGeo"]<-"ResidenceCityCoordinates"
 colnames(df)[colnames(df)=="InjuryCityGeo"]<-"InjuryCityCoordinates"
+
+#formatting latitude/longitude columns
 df$DeathCityCoordinates <- gsub(".*\\n", "", df$DeathCityCoordinates)
 df$ResidenceCityCoordinates <- gsub(".*\\n", "", df$ResidenceCityCoordinates)
 df$InjuryCityCoordinates <- gsub(".*\\n", "", df$InjuryCityCoordinates)
@@ -112,7 +113,7 @@ Included here is the head of my dataframe to prove changes have been made to cle
 head(df)
 ```
 
-I now include visualizations to the drug overdose deaths, each explained within its graph title. I use filtering to promote cleaner data and reduce outliers throughout (mostly in terms of eliminated NA's). I left these values in currently to refrain from elminating data I may want to use in the future.
+I now include visualizations to the drug overdose deaths, each explained within its graph title. I use filtering to promote cleaner data and reduce outliers throughout (mostly in terms of eliminated NA's). I left these values in currently to refrain from eliminating data I may want to use in the future.
 ```{r}
 filter(df, !is.na(Age)) %>%
   ggplot(aes(x=Age)) + 
@@ -129,7 +130,7 @@ filter(df, !is.na(DeathCounty)) %>%
 ```
 
 
-Within the dataset, 2016 and some of 2014 do not have location data for the death county, so I will be working towards deriving this information from those that do include death city with another dataset that links cities to counties for Connecticut.
+Within the dataset, 2016 and some of 2014 do not have location data for the death county, so I will be working towards deriving this information from those that do include death city with another dataset that links cities to counties for Connecticut in the next deliverable.
 ```{r}
 filter(df, !is.na(Year)) %>%
   ggplot(aes(x=Year, y=..count..))+
@@ -192,3 +193,5 @@ filter(df, !is.na(Date)) %>%
 
 ```
 
+<h1>Conclusion</h1>
+The current data shows trends in the increased involvement in Fentanyl in overdoses, as well as an increased number of drugs found in the system of those who overdosed. As there is a lot of missing data within the current dataset, in deliverable two I will incorporate more datasets to fill in much of the missing data to create models and visualizations that accurately depict the overdose problem particular to cities and counties of Connecticut.

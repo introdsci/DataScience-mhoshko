@@ -8,11 +8,11 @@ output:
 
 ## Abstract
 
-I am very interested in the epidemic that the United States is facing with opioids. I have decided to pursue this subject for my project to gain a better understanding of the problem, as well as view relationships amongst different factors of the epidemic that I am interested in. My dataset is confined to accidental drug deaths within Connecticut and it is my goal to see the relationship Fentanyl has had with overdoses over the years, as well as look into locations of deaths to view whether the proximity to large cities has an impact on the number of deaths. There are many routes to explore and I am planning to find more datasets to increase the options of advancement within this project.
+I am very interested in the epidemic that the United States is facing with opioids. I have decided to pursue this subject for my project to gain a better understanding of the problem, as well as view relationships amongst different factors of the epidemic that I am interested in. My dataset is confined to accidental drug deaths within Connecticut and it is my goal to see the relationship Fentanyl has had with overdoses over the years, as well as look into locations of deaths to view whether the proximity to large cities has an impact on the number of deaths. There are many routes to explore and I am planning to find more datasets to fill in blank data to create a more complete picture of the opioid problem in Connecticut.
 
 ### 1. Discovery and Data Preparation
 
-In my first deliverable, I clean up the data appropriately for ease of use, with column naming, formatting of data and more before using these updated values to create  show death rates over time in terms of gender, location and more. 
+In my first deliverable, I clean up the data appropriately for ease of use, with column naming, formatting of data and more before using these updated values to create visualizations that show death rates over time in terms of gender, location and more. 
 
 Link to my deliverable: [here](./deliverable1.html)
  
