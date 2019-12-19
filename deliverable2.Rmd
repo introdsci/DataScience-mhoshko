@@ -163,16 +163,8 @@ df$DeathCounty <- ifelse(is.na(df$DeathCounty), df$county_name,  df$DeathCounty)
 sum(is.na(df$DeathCity))
 sum(is.na(df$DeathCounty))
 
-```
-```{r removecolumns, include=FALSE}
 #remove columns of data used in last step
-df$lat <- NULL
-df$long <- NULL
-df$cityname <- NULL
-df$lat.join <- NULL
-df$long.join <- NULL
-df$state_name <- NULL
-df$county_name <- NULL
+df <- df[,-c(1, 2, 3, 4, 5, 6, 7)]
 ```
 
 I now repeat the previous steps for both Residence as well as Injury (overdose) locations.
@@ -185,16 +177,9 @@ df <- cit[df, on = c("lat.join", "long.join"),roll = "nearest"]
 df$ResidenceCity <- ifelse(is.na(df$ResidenceCity), df$cityname,  df$ResidenceCity)
 df$ResidenceCounty <- ifelse((is.na(df$ResidenceCounty)), df$county_name,  df$ResidenceCounty)
 df$ResidenceState <- ifelse((is.na(df$ResidenceState)), df$state_name,  df$ResidenceState)
-```
 
-```{r remove_columns2, include=FALSE}
-df$lat <- NULL
-df$long <- NULL
-df$cityname <- NULL
-df$lat.join <- NULL
-df$long.join <- NULL
-df$state_name <- NULL
-df$county_name <- NULL
+#remove columns of data used in last step
+df <- df[,-c(1, 2, 3, 4, 5, 6, 7)]
 ```
 
 
@@ -206,24 +191,11 @@ df <- cit[df, on = c("lat.join", "long.join"),roll = "nearest" ]
 df$InjuryCity <- ifelse(is.na(df$InjuryCity), df$cityname,  df$InjuryCity)
 df$InjuryCounty <- ifelse(is.na(df$InjuryCounty), df$county_name,  df$InjuryCounty)
 df$InjuryState <- ifelse(is.na(df$InjuryState), df$state_name,  df$InjuryState)
+
+#remove columns of data used in last step and data no longer needed for joining
+df <- df[,-c(1, 2, 3, 4, 5, 6, 7, 50, 51, 52, 53, 54, 55)]
 ```
 
-```{r unecessary, include=FALSE}
-#remove no longer needed data
-df$lat <- NULL
-df$long <- NULL
-df$cityname <- NULL
-df$lat.join <- NULL
-df$long.join <- NULL
-df$state_name <- NULL
-df$county_name <- NULL
-df$latDeath <- NULL
-df$longDeath <- NULL
-df$latInjury <- NULL
-df$longInjury <- NULL
-df$latResidence <- NULL
-df$longResidence <- NULL
-```
 
 The concluding dataset.
 ```{r newdf2}
