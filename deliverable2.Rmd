@@ -207,7 +207,7 @@ The concluding dataset.
 
 
 Within this project, I became very interested in the location people were declared dead compared to where they overdosed. I believed there could be correlations and a relationship between these locations. While the relationship could be explained by countless different variables like the time and distance from emergency services the overdose occured, to those who died being alone and unable to call 911, or those who witnessed the overdose and did not contact 911, I use the data I have to see if there's a strong enough relationship to make predictions of the distance between death and overdose.
-I begin by creating a model to predict the distance with age, sex, number of drugs, city of overdose (InjuryCity), and the type of location (residence, hospital, etc) in a multiple linear regression. There is a relationship, but not strong enough to confidently make predictions, with most variations of the summary resulting in a confidence around 50% of predicting the correct distance (indicated by the R2 value).
+I begin by creating a model to predict the distance with age, sex, number of drugs, city of overdose (InjuryCity), and the type of location (residence, hospital, etc) in a multiple linear regression. There is a relationship, but not strong enough to confidently make predictions, with most variations of the summary resulting in a confidence around 60% of predicting the correct distance (indicated by the R2 value).
 ```{r model2}
 set.seed(385)
 samp <- df %>%
